@@ -1,0 +1,33 @@
+{
+  "method": "shap",
+  "top_features": [
+    {
+      "feature": "cat__SmokingHistory_Former",
+      "importance": 0.011466806760913193
+    },
+    {
+      "feature": "cat__SmokingHistory_Never",
+      "importance": 0.010172032724608518
+    },
+    {
+      "feature": "cat__DietType_Average",
+      "importance": 0.01011164631799063
+    },
+    {
+      "feature": "cat__Sex_Female",
+      "importance": 0.010053677903289013
+    },
+    {
+      "feature": "cat__SmokingHistory_Current",
+      "importance": 0.009796629641979115
+    },
+    {
+      "feature": "cat__Sex_Male",
+      "importance": 0.0093143487772324
+    },
+    {
+      "feature": "num__Age",
+      "importance": 0.008990248350312811
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+**/node_modules/
+**/.npm/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Builds
+**/dist/
+**/build/
+**/.vite/
+**/.next/
+**/.turbo/
+
+# Python
+.venv/
+venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+
+# Secrets
+*.env
+*.env.*
+!*.env.example
+**/.bolt/
+
+# Data & large artifacts
+ml/dataset/
+# If models are large, prefer LFS (see step 4)
+# Otherwise un-comment to ignore them:
+# **/*.pkl
+# **/*.pt
+# **/*.onnx
+# **/*.h5
+# **/*.joblib
+
+# Logs & coverage
+logs/
+*.log
+.coverage
+**/coverage/

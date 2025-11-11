@@ -1,0 +1,63 @@
+{
+  "accuracy": 0.998,
+  "precision_weighted": 0.9980283687943263,
+  "recall_weighted": 0.998,
+  "f1_weighted": 0.9980001498501498,
+  "classification_report": {
+    "Anemia": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 133.0
+    },
+    "COVID-19": {
+      "precision": 1.0,
+      "recall": 0.9861111111111112,
+      "f1-score": 0.993006993006993,
+      "support": 144.0
+    },
+    "Dengue": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 146.0
+    },
+    "Diabetes": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 145.0
+    },
+    "Flu": {
+      "precision": 0.9858156028368794,
+      "recall": 1.0,
+      "f1-score": 0.9928571428571429,
+      "support": 139.0
+    },
+    "Heart Disease": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 147.0
+    },
+    "Kidney Disease": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 146.0
+    },
+    "accuracy": 0.998,
+    "macro avg": {
+      "precision": 0.9979736575481256,
+      "recall": 0.9980158730158729,
+      "f1-score": 0.9979805908377336,
+      "support": 1000.0
+    },
+    "weighted avg": {
+      "precision": 0.9980283687943263,
+      "recall": 0.998,
+      "f1-score": 0.9980001498501498,
+      "support": 1000.0
+    }
+  }
+}
