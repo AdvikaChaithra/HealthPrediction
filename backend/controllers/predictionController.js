@@ -1,3 +1,4 @@
+//backend/controllers/predictionController.js
 import History from "../models/History.js";
 import { predictDisease } from "../utils/mlService.js";
 
@@ -59,14 +60,17 @@ export const predict = async (req, res) => {
     const result = await predictDisease(mappedFeatures);
     console.log("✅ Flask Response:", result);
 
-    // ✅ Save prediction in MongoDB history
-    const historyEntry = await History.create({
-      userId,
-      features: mappedFeatures,
-      prediction: result.prediction,
-      confidence: result.confidence,
-      explanation: result.explanation,
-    });
+    // ✅ Save prediction history (include original symptom text)
+const historyEntry = await History.create({
+  userId,
+  features: {
+    ...mappedFeatures,
+    symptoms: features.symptoms || "", // 👈 store user's raw symptom input
+  },
+  prediction: result.prediction,
+  confidence: result.confidence,
+  explanation: result.explanation,
+});
 
     // ✅ Return response to frontend
     res.json({ ...result, historyId: historyEntry._id });

@@ -1,4 +1,4 @@
-
+//backend/models/history.js
 import mongoose from "mongoose";
 
 const historySchema = new mongoose.Schema({

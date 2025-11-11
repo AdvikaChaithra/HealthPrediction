@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 export default function Home() {
   const { user } = useAuth();
 
-  // --- form state ---
+  // --- Form state ---
   const [form, setForm] = useState({
     age: '',
     sex: '',
@@ -21,12 +21,12 @@ export default function Home() {
   const [result, setResult] = useState<any | null>(null);
   const [success, setSuccess] = useState('');
 
-  // --- Handle form field updates ---
+  // --- Handle form updates ---
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // --- Handle predict request ---
+  // --- Predict request ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -177,41 +177,21 @@ export default function Home() {
         {result && (
           <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Prediction Result</h2>
+
             <p className="text-lg text-gray-900 mb-3">
               🧠 Predicted Disease: <strong>{result.prediction}</strong>
             </p>
+
+            {/* Confidence Bar */}
             <div className="w-full bg-gray-200 rounded h-3 mb-2">
               <div
                 className="h-3 rounded bg-green-500"
-                style={{ width: `${Math.round(result.confidence * 100)}%` }}
+                style={{ width: `${Math.round((result.confidence || 0) * 100)}%` }}
               ></div>
             </div>
             <p className="text-sm text-gray-700">
-              Confidence: {Math.round(result.confidence * 100)}%
+              Confidence: {Math.round((result.confidence || 0) * 100)}%
             </p>
-
-            {/* --- Top Contributors --- */}
-            {result.explanation?.top_contributors && (
-              <div className="mt-4">
-                <h3 className="text-md font-semibold text-gray-800 mb-2">
-                  Top Contributing Factors:
-                </h3>
-                {result.explanation.top_contributors.slice(0, 5).map((c: any, i: number) => (
-                  <div key={i} className="mb-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{c.feature}</span>
-                      <span>{c.weight.toFixed(3)}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded h-2">
-                      <div
-                        className="h-2 rounded bg-blue-500"
-                        style={{ width: `${Math.min(Math.abs(c.weight) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 

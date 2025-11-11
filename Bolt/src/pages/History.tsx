@@ -1,4 +1,3 @@
-// src/pages/History.tsx
 import React, { useState, useEffect } from 'react';
 import {
   History as HistoryIcon,
@@ -23,7 +22,7 @@ export default function History() {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get('/predictions/history');
+        const { data } = await api.get('/prediction/history');
         setItems(data);
       } catch (err: any) {
         setError(err?.response?.data?.message || 'Failed to load history');
@@ -96,7 +95,7 @@ export default function History() {
           </ul>
         )}
 
-        {/* Modal for selected history item */}
+        {/* --- Modal for detailed view --- */}
         {selected && (
           <div
             className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
@@ -112,6 +111,7 @@ export default function History() {
               >
                 ✕
               </button>
+
               <h2 className="text-2xl font-semibold text-gray-900 mb-4">
                 Prediction Details
               </h2>
@@ -137,6 +137,7 @@ export default function History() {
                   </p>
                 </div>
 
+                {/* --- Display Original User Inputs --- */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Symptoms:</p>
                   <p className="text-gray-700 bg-gray-50 border border-gray-200 p-3 rounded">
@@ -147,43 +148,35 @@ export default function History() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <User className="inline-block w-4 h-4 text-gray-500 mr-1" />
-                    <span className="font-medium">{selected.features?.sex}</span>
+                    <span className="font-medium">
+                      {selected.features?.Sex || selected.features?.sex || '—'}
+                    </span>
                   </div>
                   <div>
                     <Utensils className="inline-block w-4 h-4 text-gray-500 mr-1" />
-                    <span className="font-medium">{selected.features?.diet_type}</span>
+                    <span className="font-medium">
+                      {selected.features?.DietType ||
+                        selected.features?.diet_type ||
+                        '—'}
+                    </span>
                   </div>
                   <div>
                     <Activity className="inline-block w-4 h-4 text-gray-500 mr-1" />
-                    <span className="font-medium">{selected.features?.physical_activity}</span>
+                    <span className="font-medium">
+                      {selected.features?.ExerciseFrequency ||
+                        selected.features?.physical_activity ||
+                        '—'}
+                    </span>
                   </div>
                   <div>
                     <Cigarette className="inline-block w-4 h-4 text-gray-500 mr-1" />
-                    <span className="font-medium">{selected.features?.smoking_history}</span>
+                    <span className="font-medium">
+                      {selected.features?.SmokingHistory ||
+                        selected.features?.smoking_history ||
+                        '—'}
+                    </span>
                   </div>
                 </div>
-
-                {selected.explanation?.top_contributors && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-2">Top Contributors:</p>
-                    {selected.explanation.top_contributors.slice(0, 5).map((c: any) => (
-                      <div key={c.feature} className="my-1">
-                        <div className="flex justify-between text-sm">
-                          <span>{c.feature}</span>
-                          <span>{c.weight.toFixed(3)}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded">
-                          <div
-                            className="h-2 rounded bg-blue-500"
-                            style={{
-                              width: `${Math.min(Math.abs(c.weight) * 100, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
 
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Created At:</p>
