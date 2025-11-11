@@ -15,14 +15,25 @@ export const predict = async (req, res) => {
       ExerciseFrequency: features.physical_activity,
     };
 
-    // ✅ Convert symptoms text → binary flags
+    // ✅ Normalize helper (removes spaces, hyphens, underscores)
+    const normalize = (text) =>
+      text.toLowerCase().replace(/[\s\-_]+/g, "").trim();
+
+    // ✅ Convert user symptom input into normalized list
     const symptomList = features.symptoms
       ? features.symptoms
-          .split(/\s|,|;/) // split by space or comma
-          .map(s => s.trim().toLowerCase())
+          .toLowerCase()
+          .split(/[,;]+|\n+/) // split by commas, semicolons, or newlines
+          .map((s) =>
+            s
+              .trim()
+              .replace(/[-_]+/g, " ") // join words like weight-loss → weight loss
+              .replace(/\s+/g, " ")   // collapse multiple spaces
+          )
           .filter(Boolean)
       : [];
 
+    // ✅ All possible model feature keys (must match your ML model)
     const symptomKeys = [
       "Back Pain", "Bleeding Gums", "Blurred Vision", "Body Ache", "Chest Pain",
       "Cold Hands", "Cough", "Dizziness", "Fatigue", "Fever",
@@ -32,19 +43,23 @@ export const predict = async (req, res) => {
       "Sore Throat", "Sweating", "Swelling", "Weakness", "Weight Loss"
     ];
 
-    // 🔧 Convert user’s symptoms to 1/0 features for the model
-    symptomKeys.forEach(key => {
-      mappedFeatures[key] = symptomList.includes(key.toLowerCase()) ? 1 : 0;
+    // ✅ Detect symptom presence (matches even without spaces)
+    symptomKeys.forEach((key) => {
+      const normalizedKey = normalize(key); // e.g. "Weight Loss" → "weightloss"
+      mappedFeatures[key] = symptomList.some(
+        (s) => normalize(s) === normalizedKey
+      )
+        ? 1
+        : 0;
     });
 
     console.log("🧠 Final mappedFeatures:", mappedFeatures);
 
-    // ✅ Call Flask ML API
+    // ✅ Send features to Flask ML API
     const result = await predictDisease(mappedFeatures);
-
     console.log("✅ Flask Response:", result);
 
-    // ✅ Save prediction history to MongoDB
+    // ✅ Save prediction in MongoDB history
     const historyEntry = await History.create({
       userId,
       features: mappedFeatures,
@@ -53,7 +68,7 @@ export const predict = async (req, res) => {
       explanation: result.explanation,
     });
 
-    // ✅ Return combined result to frontend
+    // ✅ Return response to frontend
     res.json({ ...result, historyId: historyEntry._id });
   } catch (err) {
     console.error("❌ Prediction Error:", err.message);

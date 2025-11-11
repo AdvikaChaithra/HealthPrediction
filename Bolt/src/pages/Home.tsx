@@ -1,59 +1,46 @@
-// src/pages/Home.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
   const { user } = useAuth();
 
-  // form + ML prediction state
+  // --- form state ---
   const [form, setForm] = useState({
-    sex: 'Female',
-    age: 20,
-    diet_type: 'Healthy',
-    smoking_history: 'Never',
-    physical_activity: 'Moderate',
+    age: '',
+    sex: '',
+    diet_type: '',
+    smoking_history: '',
+    physical_activity: '',
     symptoms: '',
   });
 
-  const [schema, setSchema] = useState<{ feature_order: string[] } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [result, setResult] = useState<any | null>(null);
   const [success, setSuccess] = useState('');
-  const [result, setResult] = useState<any>(null);
 
-  // Fetch schema or backend health
-  useEffect(() => {
-    const fetchSchema = async () => {
-      try {
-        await api.get('/health'); // Optional health check
-        const { data } = await api.get('/ml/schema');
-        setSchema(data);
-      } catch (err) {
-        console.warn('Schema fetch failed:', err);
-      }
-    };
-    fetchSchema();
-  }, []);
-
-  // handle form input
-  const handleChange = (key: string, value: string | number) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+  // --- Handle form field updates ---
+  const handleChange = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Predict API call
-  const handlePredict = async (e: React.FormEvent) => {
+  // --- Handle predict request ---
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setResult(null);
     setSuccess('');
     setLoading(true);
 
     try {
       const { data } = await api.post('/prediction', { features: form });
+      console.log('✅ Prediction Result:', data);
       setResult(data);
       setSuccess('Prediction completed successfully!');
     } catch (err: any) {
+      console.error('❌ Prediction Error:', err);
       setError(err?.response?.data?.message || 'Something went wrong');
     } finally {
       setLoading(false);
@@ -68,51 +55,47 @@ export default function Home() {
           <h1 className="text-3xl font-bold text-gray-900">Health Symptom Checker</h1>
         </div>
 
-        <form onSubmit={handlePredict} className="space-y-6">
+        {/* --- Form --- */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Age */}
             <div>
-              <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-2">
-                Age <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Age *</label>
               <input
-                id="age"
                 type="number"
                 value={form.age}
-                onChange={(e) => handleChange('age', Number(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                placeholder="Enter your age"
-                min="1"
-                max="120"
+                onChange={(e) => handleChange('age', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
 
+            {/* Sex */}
             <div>
-              <label htmlFor="sex" className="block text-sm font-medium text-gray-700 mb-2">
-                Sex <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Sex *</label>
               <select
-                id="sex"
                 value={form.sex}
                 onChange={(e) => handleChange('sex', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
               >
-                <option value="Male">Male</option>
+                <option value="">Select sex</option>
                 <option value="Female">Female</option>
+                <option value="Male">Male</option>
                 <option value="Other">Other</option>
               </select>
             </div>
 
+            {/* Diet Type */}
             <div>
-              <label htmlFor="dietType" className="block text-sm font-medium text-gray-700 mb-2">
-                Diet Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Diet Type *</label>
               <select
-                id="dietType"
                 value={form.diet_type}
                 onChange={(e) => handleChange('diet_type', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
               >
+                <option value="">Select diet type</option>
                 <option value="Healthy">Healthy</option>
                 <option value="Vegetarian">Vegetarian</option>
                 <option value="Non-Vegetarian">Non-Vegetarian</option>
@@ -120,103 +103,106 @@ export default function Home() {
               </select>
             </div>
 
+            {/* Smoking History */}
             <div>
-              <label htmlFor="smokingHistory" className="block text-sm font-medium text-gray-700 mb-2">
-                Smoking History
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Smoking History *</label>
               <select
-                id="smokingHistory"
                 value={form.smoking_history}
                 onChange={(e) => handleChange('smoking_history', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
               >
+                <option value="">Select smoking history</option>
                 <option value="Never">Never</option>
                 <option value="Former">Former</option>
                 <option value="Current">Current</option>
               </select>
             </div>
 
+            {/* Physical Activity */}
             <div>
-              <label htmlFor="physicalActivity" className="block text-sm font-medium text-gray-700 mb-2">
-                Physical Activity
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Physical Activity *</label>
               <select
-                id="physicalActivity"
                 value={form.physical_activity}
                 onChange={(e) => handleChange('physical_activity', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                required
               >
-                <option value="Sedentary">Sedentary</option>
+                <option value="">Select activity</option>
+                <option value="Low">Low</option>
                 <option value="Moderate">Moderate</option>
-                <option value="Active">Active</option>
+                <option value="High">High</option>
               </select>
             </div>
           </div>
 
+          {/* Symptoms */}
           <div>
-            <label htmlFor="symptoms" className="block text-sm font-medium text-gray-700 mb-2">
-              Symptoms
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Symptoms *</label>
             <textarea
-              id="symptoms"
               value={form.symptoms}
               onChange={(e) => handleChange('symptoms', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-              placeholder="Describe your symptoms in detail..."
-              rows={6}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+              rows={4}
+              placeholder="Describe your symptoms (e.g., Fever, Cough, Headache)..."
+              required
             />
           </div>
 
+          {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
+          {/* Success */}
           {success && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
               {success}
             </div>
           )}
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
           >
             {loading ? 'Analyzing...' : 'Predict Health'}
           </button>
         </form>
 
+        {/* --- Prediction Result Section --- */}
         {result && (
-          <div className="mt-8 p-6 bg-gray-50 border border-gray-200 rounded-xl">
-            <h2 className="text-xl font-semibold mb-3">Prediction Result</h2>
-            <p className="text-gray-800 mb-3">
-              <strong>Disease:</strong> {result.prediction}
+          <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Prediction Result</h2>
+            <p className="text-lg text-gray-900 mb-3">
+              🧠 Predicted Disease: <strong>{result.prediction}</strong>
             </p>
-
-            {/* Confidence Bar */}
-            <div className="w-full bg-gray-200 rounded mb-2">
+            <div className="w-full bg-gray-200 rounded h-3 mb-2">
               <div
                 className="h-3 rounded bg-green-500"
                 style={{ width: `${Math.round(result.confidence * 100)}%` }}
-              />
+              ></div>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-700">
               Confidence: {Math.round(result.confidence * 100)}%
             </p>
 
-            {/* Contributors */}
+            {/* --- Top Contributors --- */}
             {result.explanation?.top_contributors && (
-              <>
-                <h3 className="text-md font-semibold mb-2">Top Contributing Factors:</h3>
-                {result.explanation.top_contributors.slice(0, 5).map((c: any) => (
-                  <div key={c.feature} className="my-1">
+              <div className="mt-4">
+                <h3 className="text-md font-semibold text-gray-800 mb-2">
+                  Top Contributing Factors:
+                </h3>
+                {result.explanation.top_contributors.slice(0, 5).map((c: any, i: number) => (
+                  <div key={i} className="mb-2">
                     <div className="flex justify-between text-sm">
                       <span>{c.feature}</span>
                       <span>{c.weight.toFixed(3)}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded">
+                    <div className="w-full bg-gray-200 rounded h-2">
                       <div
                         className="h-2 rounded bg-blue-500"
                         style={{ width: `${Math.min(Math.abs(c.weight) * 100, 100)}%` }}
@@ -224,14 +210,16 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
-              </>
+              </div>
             )}
           </div>
         )}
 
+        {/* Disclaimer */}
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-800">
-            <strong>Disclaimer:</strong> This is a demo health predictor. Consult a healthcare professional for real advice.
+            <strong>Disclaimer:</strong> This AI prediction is for educational purposes only.
+            Always consult a licensed healthcare professional for a medical diagnosis.
           </p>
         </div>
       </div>
