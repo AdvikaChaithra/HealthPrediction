@@ -15,7 +15,7 @@ const normalize = (text) =>
 export const predict = async (req, res) => {
   try {
     const { features } = req.body;
-    const userId = req.userId || null;
+    const userId = req.userId; // 👈 comes from verifyToken
 
     // --- Store user-friendly snapshot ---
     const formSnapshot = {

@@ -30,7 +30,7 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
     }, { timestamps: true });
 
     const User = mongoose.model("User", userSchema, "users");
-    const History = mongoose.model("History", historySchema, "history");
+    const History = mongoose.model("History", historySchema, "histories");
 
     // Create indexes (idempotent)
     await User.collection.createIndex({ email: 1 }, { unique: true });
