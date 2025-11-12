@@ -1,7 +1,7 @@
 // backend/models/History.js
 import mongoose from "mongoose";
 
-// Sub-schema for storing the form snapshot (user-entered info)
+// --- Sub-schema for user-entered data ---
 const FormSnapshotSchema = new mongoose.Schema(
   {
     age: { type: Number, min: 0, max: 150 },
@@ -9,12 +9,29 @@ const FormSnapshotSchema = new mongoose.Schema(
     diet_type: { type: String, default: "" },
     smoking_history: { type: String, default: "" },
     physical_activity: { type: String, default: "" },
-    symptoms_text: { type: String, default: "" }, // stores user-entered symptoms
+    symptoms_text: { type: String, default: "" }, // User-entered symptom text
   },
   { _id: false }
 );
 
-// Main schema for prediction history
+// --- Advice schema for richer health guidance ---
+const AdviceSchema = new mongoose.Schema(
+  {
+    short: { type: String, default: "" },
+    avoid: { type: [String], default: [] },
+    do: { type: [String], default: [] },
+    prevention: { type: [String], default: [] },
+    nutrition: {
+      recommended: { type: [String], default: [] },
+      avoid: { type: [String], default: [] },
+    },
+    urgent: { type: Boolean, default: false },
+    notes: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+// --- Main schema ---
 const HistorySchema = new mongoose.Schema(
   {
     userId: {
@@ -24,36 +41,20 @@ const HistorySchema = new mongoose.Schema(
       index: true,
     },
 
-    // Human-readable data snapshot (entered in the form)
-    form: { type: FormSnapshotSchema, required: true },
+    form: { type: FormSnapshotSchema, required: true }, // readable snapshot
+    features: { type: Object, required: true }, // one-hot encoded inputs
 
-    // ML-ready features that were actually sent to the model
-    features: { type: Object, required: true },
-
-    // Prediction results
     prediction: { type: String, required: true, index: true },
     confidence: { type: Number, required: true, min: 0, max: 1 },
-
-    // Optional explainability data (e.g. SHAP values)
     explanation: { type: Object, default: null },
 
-    // ✅ NEW FIELD: Disease advice (for user-friendly suggestions)
-    advice: {
-      type: {
-        short: { type: String }, // 1-line summary
-        avoid: { type: [String] }, // list of things to avoid
-        do: { type: [String] }, // list of things to intake or follow
-        urgent: { type: Boolean, default: false }, // if doctor visit is urgent
-        notes: { type: String }, // optional additional description
-      },
-      default: null,
-    },
+    // ✅ Full structured advice info
+    advice: { type: AdviceSchema, default: null },
   },
   { timestamps: true }
 );
 
-// Index for quick history fetch per user
+// helpful index
 HistorySchema.index({ userId: 1, createdAt: -1 });
 
-// Export model
 export default mongoose.model("History", HistorySchema, "histories");

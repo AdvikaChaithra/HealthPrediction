@@ -1,9 +1,9 @@
-// backend/controllers/predictionController.js
+// backend/controllers/predictionController.js 
 import History from "../models/History.js";
 import { predictDisease } from "../utils/mlService.js";
-import diseaseAdvice from "../config/diseaseAdvice.js"; // NEW — advice mapping
+import diseaseAdvice from "../config/diseaseAdvice.js";
 
-// Helper function to normalize symptom text
+// Helper to normalize text for consistent lookups
 const normalize = (text) =>
   (text || "")
     .toString()
@@ -14,10 +14,10 @@ const normalize = (text) =>
 
 export const predict = async (req, res) => {
   try {
-    const { features } = req.body; // raw frontend form data
+    const { features } = req.body;
     const userId = req.userId || null;
 
-    // --- Store the exact user input (human-readable form) ---
+    // --- Store user-friendly snapshot ---
     const formSnapshot = {
       age: Number(features.age) || null,
       sex: features.sex || "",
@@ -27,7 +27,7 @@ export const predict = async (req, res) => {
       symptoms_text: (features.symptoms || "").trim(),
     };
 
-    // --- Prepare ML-ready features ---
+    // --- Build ML-ready features ---
     const mappedFeatures = {
       Age: formSnapshot.age,
       Sex: formSnapshot.sex,
@@ -36,13 +36,12 @@ export const predict = async (req, res) => {
       ExerciseFrequency: formSnapshot.physical_activity,
     };
 
-    // --- Convert user-entered symptoms into model features ---
+    // --- Process symptoms ---
     const symptomList = formSnapshot.symptoms_text
       ? formSnapshot.symptoms_text
-          .split(/[,;\n]+/) // split by comma, semicolon, or newline
-          .map((s) => s.trim())
+          .split(/[,;\n]+/)
+          .map((s) => normalize(s))
           .filter(Boolean)
-          .map(normalize)
       : [];
 
     const symptomKeys = [
@@ -59,23 +58,26 @@ export const predict = async (req, res) => {
       mappedFeatures[key] = symptomList.includes(nk) ? 1 : 0;
     });
 
-    console.log("🧠 Final mappedFeatures:", mappedFeatures);
-
-    // --- Call Flask model prediction API ---
+    // --- Get prediction from ML model ---
     const result = await predictDisease(mappedFeatures);
-    console.log("✅ Flask Response:", result);
+    const predicted = (result.prediction || "Unknown").trim();
 
-    // --- Get advice based on the predicted disease ---
-    const predicted = result.prediction || "Unknown";
-    const advice = diseaseAdvice[predicted] || {
-      short: "No specific guidance available.",
-      avoid: [],
-      do: ["Follow up with a medical professional if worried."],
-      urgent: false,
-      notes: "",
-    };
+    // --- Find advice (case-insensitive lookup) ---
+    const adviceKey = normalize(predicted);
+    const advice =
+      diseaseAdvice[adviceKey] ||
+      diseaseAdvice[predicted] ||
+      diseaseAdvice["default"] || {
+        short: "No specific guidance available.",
+        avoid: [],
+        do: ["Consult a healthcare provider for personalized advice."],
+        prevention: [],
+        nutrition: { recommended: [], avoid: [] },
+        urgent: false,
+        notes: "",
+      };
 
-    // --- Save everything to MongoDB ---
+    // --- Save to MongoDB ---
     const historyEntry = await History.create({
       userId,
       form: formSnapshot,
@@ -83,19 +85,23 @@ export const predict = async (req, res) => {
       prediction: predicted,
       confidence: result.confidence ?? 0,
       explanation: result.explanation ?? null,
-      advice, // ✅ NEW field
+      advice,
     });
 
-    // --- Return prediction + advice to frontend ---
-    res.json({ ...result, historyId: historyEntry._id, advice });
+    // --- Send back full result with advice ---
+    res.json({
+      ...result,
+      prediction: predicted,
+      historyId: historyEntry._id,
+      advice,
+    });
   } catch (err) {
     console.error("❌ Prediction Error:", err);
-    if (err.response) console.error("Flask Error:", err.response.data);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message || "Prediction failed" });
   }
 };
 
-// ✅ Fetch all past predictions for the logged-in user
+// ✅ Fetch user’s full prediction history
 export const getHistory = async (req, res) => {
   try {
     const userId = req.userId;
