@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   History as HistoryIcon,
   Calendar,
@@ -6,26 +6,26 @@ import {
   Utensils,
   Cigarette,
   Activity,
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import api from '../lib/api';
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import api from "../lib/api";
 
 export default function History() {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!user) return;
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get('/prediction/history');
+        const { data } = await api.get("/prediction/history");
         setItems(data);
       } catch (err: any) {
-        setError(err?.response?.data?.message || 'Failed to load history');
+        setError(err?.response?.data?.message || "Failed to load history");
       } finally {
         setLoading(false);
       }
@@ -34,12 +34,12 @@ export default function History() {
   }, [user]);
 
   const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
   if (loading)
@@ -55,7 +55,9 @@ export default function History() {
       <div className="bg-white rounded-2xl shadow-lg p-8">
         <div className="flex items-center gap-3 mb-8">
           <HistoryIcon className="w-8 h-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Prediction History</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Prediction History
+          </h1>
         </div>
 
         {error && (
@@ -68,7 +70,9 @@ export default function History() {
           <div className="text-center py-12">
             <HistoryIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 text-lg">No predictions yet</p>
-            <p className="text-gray-500 mt-2">Make your first prediction to see it here</p>
+            <p className="text-gray-500 mt-2">
+              Make your first prediction to see it here
+            </p>
           </div>
         ) : (
           <ul>
@@ -80,7 +84,7 @@ export default function History() {
               >
                 <div className="flex justify-between items-center mb-1">
                   <div className="font-medium text-gray-800">
-                    {h.prediction || 'Unknown Disease'}
+                    {h.prediction || "Unknown Disease"}
                   </div>
                   <div className="flex items-center gap-1 text-gray-600 text-sm">
                     <Calendar className="w-4 h-4" />
@@ -118,17 +122,25 @@ export default function History() {
 
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Disease Predicted:</p>
-                  <p className="font-semibold text-blue-700">{selected.prediction}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    Disease Predicted:
+                  </p>
+                  <p className="font-semibold text-blue-700">
+                    {selected.prediction}
+                  </p>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Confidence:</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    Confidence:
+                  </p>
                   <div className="w-full bg-gray-200 rounded">
                     <div
                       className="h-3 rounded bg-green-500"
                       style={{
-                        width: `${Math.round((selected.confidence ?? 0) * 100)}%`,
+                        width: `${Math.round(
+                          (selected.confidence ?? 0) * 100
+                        )}%`,
                       }}
                     />
                   </div>
@@ -139,9 +151,14 @@ export default function History() {
 
                 {/* --- Display Original User Inputs --- */}
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Symptoms:</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    Symptoms:
+                  </p>
                   <p className="text-gray-700 bg-gray-50 border border-gray-200 p-3 rounded">
-                    {selected.features?.symptoms || '—'}
+                    {selected.form?.symptoms_text &&
+                    selected.form.symptoms_text.trim() !== ""
+                      ? selected.form.symptoms_text
+                      : "—"}
                   </p>
                 </div>
 
@@ -149,7 +166,7 @@ export default function History() {
                   <div>
                     <User className="inline-block w-4 h-4 text-gray-500 mr-1" />
                     <span className="font-medium">
-                      {selected.features?.Sex || selected.features?.sex || '—'}
+                      {selected.features?.Sex || selected.features?.sex || "—"}
                     </span>
                   </div>
                   <div>
@@ -157,7 +174,7 @@ export default function History() {
                     <span className="font-medium">
                       {selected.features?.DietType ||
                         selected.features?.diet_type ||
-                        '—'}
+                        "—"}
                     </span>
                   </div>
                   <div>
@@ -165,7 +182,7 @@ export default function History() {
                     <span className="font-medium">
                       {selected.features?.ExerciseFrequency ||
                         selected.features?.physical_activity ||
-                        '—'}
+                        "—"}
                     </span>
                   </div>
                   <div>
@@ -173,14 +190,18 @@ export default function History() {
                     <span className="font-medium">
                       {selected.features?.SmokingHistory ||
                         selected.features?.smoking_history ||
-                        '—'}
+                        "—"}
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Created At:</p>
-                  <p className="text-gray-700">{formatDate(selected.createdAt)}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">
+                    Created At:
+                  </p>
+                  <p className="text-gray-700">
+                    {formatDate(selected.createdAt)}
+                  </p>
                 </div>
               </div>
             </div>

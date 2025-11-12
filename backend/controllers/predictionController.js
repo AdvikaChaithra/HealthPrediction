@@ -1,78 +1,70 @@
-//backend/controllers/predictionController.js
+// backend/controllers/predictionController.js
 import History from "../models/History.js";
 import { predictDisease } from "../utils/mlService.js";
 
 export const predict = async (req, res) => {
   try {
-    const { features } = req.body;
+    const { features } = req.body; // raw frontend form data
     const userId = req.userId || null;
 
-    // ✅ Map frontend → ML expected keys
-    const mappedFeatures = {
-      Age: features.age,
-      Sex: features.sex,
-      SmokingHistory: features.smoking_history,
-      DietType: features.diet_type,
-      ExerciseFrequency: features.physical_activity,
+    // --- Human-readable snapshot (stores exactly what user entered) ---
+    const formSnapshot = {
+      age: Number(features.age) || null,
+      sex: features.sex || "",
+      diet_type: features.diet_type || "",
+      smoking_history: features.smoking_history || "",
+      physical_activity: features.physical_activity || "",
+      symptoms_text: (features.symptoms || "").trim(), // exact user input
     };
 
-    // ✅ Normalize helper (removes spaces, hyphens, underscores)
-    const normalize = (text) =>
-      text.toLowerCase().replace(/[\s\-_]+/g, "").trim();
+    // --- ML-ready features mapping (used for model prediction) ---
+    const mappedFeatures = {
+      Age: formSnapshot.age,
+      Sex: formSnapshot.sex,
+      SmokingHistory: formSnapshot.smoking_history,
+      DietType: formSnapshot.diet_type,
+      ExerciseFrequency: formSnapshot.physical_activity,
+    };
 
-    // ✅ Convert user symptom input into normalized list
-    const symptomList = features.symptoms
-      ? features.symptoms
-          .toLowerCase()
-          .split(/[,;]+|\n+/) // split by commas, semicolons, or newlines
-          .map((s) =>
-            s
-              .trim()
-              .replace(/[-_]+/g, " ") // join words like weight-loss → weight loss
-              .replace(/\s+/g, " ")   // collapse multiple spaces
-          )
+    // --- Normalize and convert symptoms for model input ---
+    const normalize = (text) => text.replace(/[\s_]+/g, "").toLowerCase();
+    const symptomList = formSnapshot.symptoms_text
+      ? formSnapshot.symptoms_text
+          .split(/[,;]+|\n+/) // split by comma, semicolon, or newline
+          .map((s) => s.trim())
           .filter(Boolean)
+          .map(normalize)
       : [];
 
-    // ✅ All possible model feature keys (must match your ML model)
     const symptomKeys = [
-      "Back Pain", "Bleeding Gums", "Blurred Vision", "Body Ache", "Chest Pain",
-      "Cold Hands", "Cough", "Dizziness", "Fatigue", "Fever",
-      "Frequent Urination", "Headache", "High Fever", "Increased Thirst",
-      "Irregular Heartbeat", "Itching", "Joint Pain", "Loss of Smell",
-      "Nausea", "Pale Skin", "Rash", "Shortness of Breath", "Slow Healing",
-      "Sore Throat", "Sweating", "Swelling", "Weakness", "Weight Loss"
+      "Back Pain","Bleeding Gums","Blurred Vision","Body Ache","Chest Pain",
+      "Cold Hands","Cough","Dizziness","Fatigue","Fever","Frequent Urination",
+      "Headache","High Fever","Increased Thirst","Irregular Heartbeat","Itching",
+      "Joint Pain","Loss of Smell","Nausea","Pale Skin","Rash",
+      "Shortness of Breath","Slow Healing","Sore Throat","Sweating","Swelling",
+      "Weakness","Weight Loss"
     ];
 
-    // ✅ Detect symptom presence (matches even without spaces)
     symptomKeys.forEach((key) => {
-      const normalizedKey = normalize(key); // e.g. "Weight Loss" → "weightloss"
-      mappedFeatures[key] = symptomList.some(
-        (s) => normalize(s) === normalizedKey
-      )
-        ? 1
-        : 0;
+      mappedFeatures[key] = symptomList.includes(normalize(key)) ? 1 : 0;
     });
 
     console.log("🧠 Final mappedFeatures:", mappedFeatures);
 
-    // ✅ Send features to Flask ML API
+    // --- Send to ML model (Flask API) ---
     const result = await predictDisease(mappedFeatures);
     console.log("✅ Flask Response:", result);
 
-    // ✅ Save prediction history (include original symptom text)
-const historyEntry = await History.create({
-  userId,
-  features: {
-    ...mappedFeatures,
-    symptoms: features.symptoms || "", // 👈 store user's raw symptom input
-  },
-  prediction: result.prediction,
-  confidence: result.confidence,
-  explanation: result.explanation,
-});
+    // --- Save everything into MongoDB (readable + ML input) ---
+    const historyEntry = await History.create({
+      userId,
+      form: formSnapshot, // <-- stores age, sex, diet, etc., + symptoms_text
+      features: mappedFeatures, // <-- one-hot encoded ML features
+      prediction: result.prediction,
+      confidence: result.confidence,
+      explanation: result.explanation || null,
+    });
 
-    // ✅ Return response to frontend
     res.json({ ...result, historyId: historyEntry._id });
   } catch (err) {
     console.error("❌ Prediction Error:", err.message);
@@ -81,12 +73,14 @@ const historyEntry = await History.create({
   }
 };
 
+// ✅ Fetch history for logged-in user
 export const getHistory = async (req, res) => {
   try {
     const userId = req.userId;
     const history = await History.find({ userId }).sort({ createdAt: -1 });
     res.json(history);
   } catch (err) {
+    console.error("❌ History Fetch Error:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
