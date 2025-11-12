@@ -187,11 +187,51 @@ export default function Home() {
               <div
                 className="h-3 rounded bg-green-500"
                 style={{ width: `${Math.round((result.confidence || 0) * 100)}%` }}
-              ></div>
+              />
             </div>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700 mb-4">
               Confidence: {Math.round((result.confidence || 0) * 100)}%
             </p>
+
+            {/* ✅ Advice Section */}
+            {result.advice && (
+              <div className="bg-white border rounded p-4">
+                <h3 className="font-semibold mb-2">Quick Guidance</h3>
+                <p className="mb-2">{result.advice.short}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Avoid</p>
+                    <ul className="list-disc ml-5 text-sm">
+                      {result.advice.avoid?.length
+                        ? result.advice.avoid.map((a: string, i: number) => (
+                            <li key={i}>{a}</li>
+                          ))
+                        : <li>—</li>}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Do's</p>
+                    <ul className="list-disc ml-5 text-sm">
+                      {result.advice.do?.length
+                        ? result.advice.do.map((d: string, i: number) => (
+                            <li key={i}>{d}</li>
+                          ))
+                        : <li>—</li>}
+                    </ul>
+                  </div>
+                </div>
+
+                {result.advice.notes && (
+                  <p className="mt-3 text-sm text-gray-600">{result.advice.notes}</p>
+                )}
+                {result.advice.urgent && (
+                  <p className="mt-2 font-semibold text-red-600">
+                    🚨 Seek medical attention immediately if symptoms worsen.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 

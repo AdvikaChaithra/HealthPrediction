@@ -106,7 +106,7 @@ export default function History() {
             onClick={() => setSelected(null)}
           >
             <div
-              className="bg-white rounded-xl p-6 shadow-lg w-full max-w-lg relative"
+              className="bg-white rounded-xl p-6 shadow-lg w-full max-w-lg relative overflow-y-auto max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -121,6 +121,7 @@ export default function History() {
               </h2>
 
               <div className="space-y-4">
+                {/* Disease */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">
                     Disease Predicted:
@@ -130,6 +131,7 @@ export default function History() {
                   </p>
                 </div>
 
+                {/* Confidence */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">
                     Confidence:
@@ -149,7 +151,7 @@ export default function History() {
                   </p>
                 </div>
 
-                {/* --- Display Original User Inputs --- */}
+                {/* Symptoms */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">
                     Symptoms:
@@ -162,39 +164,92 @@ export default function History() {
                   </p>
                 </div>
 
+                {/* Basic Details */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <User className="inline-block w-4 h-4 text-gray-500 mr-1" />
                     <span className="font-medium">
-                      {selected.features?.Sex || selected.features?.sex || "—"}
+                      {selected.form?.sex ||
+                        selected.features?.Sex ||
+                        "—"}
                     </span>
                   </div>
                   <div>
                     <Utensils className="inline-block w-4 h-4 text-gray-500 mr-1" />
                     <span className="font-medium">
-                      {selected.features?.DietType ||
-                        selected.features?.diet_type ||
+                      {selected.form?.diet_type ||
+                        selected.features?.DietType ||
                         "—"}
                     </span>
                   </div>
                   <div>
                     <Activity className="inline-block w-4 h-4 text-gray-500 mr-1" />
                     <span className="font-medium">
-                      {selected.features?.ExerciseFrequency ||
-                        selected.features?.physical_activity ||
+                      {selected.form?.physical_activity ||
+                        selected.features?.ExerciseFrequency ||
                         "—"}
                     </span>
                   </div>
                   <div>
                     <Cigarette className="inline-block w-4 h-4 text-gray-500 mr-1" />
                     <span className="font-medium">
-                      {selected.features?.SmokingHistory ||
-                        selected.features?.smoking_history ||
+                      {selected.form?.smoking_history ||
+                        selected.features?.SmokingHistory ||
                         "—"}
                     </span>
                   </div>
                 </div>
 
+                {/* ✅ Advice Section */}
+                {selected.advice && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                      Guidance
+                    </h3>
+                    <p className="mb-2">{selected.advice.short}</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium">Avoid</p>
+                        <ul className="list-disc ml-5 text-sm">
+                          {selected.advice.avoid?.length ? (
+                            selected.advice.avoid.map((a: string, i: number) => (
+                              <li key={i}>{a}</li>
+                            ))
+                          ) : (
+                            <li>—</li>
+                          )}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Do's</p>
+                        <ul className="list-disc ml-5 text-sm">
+                          {selected.advice.do?.length ? (
+                            selected.advice.do.map((d: string, i: number) => (
+                              <li key={i}>{d}</li>
+                            ))
+                          ) : (
+                            <li>—</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {selected.advice.notes && (
+                      <p className="mt-3 text-sm text-gray-600">
+                        {selected.advice.notes}
+                      </p>
+                    )}
+                    {selected.advice.urgent && (
+                      <p className="mt-2 font-semibold text-red-600">
+                        🚨 Seek medical attention immediately if symptoms
+                        worsen.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Created At */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">
                     Created At:
