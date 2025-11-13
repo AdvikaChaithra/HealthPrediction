@@ -227,6 +227,108 @@ const diseaseAdvice = {
     notes:
       "If you notice bleeding, abdominal pain, or restlessness, visit a hospital immediately. Severe dengue can be life-threatening.",
   },
+
+  "COVID-19": {
+  short:
+    "Possible COVID-19 infection — isolate, monitor breathing, and manage fever and cough symptoms.",
+
+  avoid: [
+    "Avoid close contact with others — self-isolate immediately",
+    "Avoid cold drinks or smoking, which irritate the respiratory system",
+    "Avoid strenuous physical activity during active infection",
+    "Avoid crowded or poorly ventilated spaces"
+  ],
+
+  do: [
+    "Wear a mask and isolate from others in your household",
+    "Monitor oxygen levels using a pulse oximeter",
+    "Stay hydrated with warm water and ORS if needed",
+    "Take paracetamol for fever or body ache (as advised)",
+    "Rest adequately and avoid overexertion",
+    "Practice steam inhalation for congestion",
+    "Seek testing and follow local health guidelines"
+  ],
+
+  prevention: [
+    "Get vaccinated and stay updated with booster doses",
+    "Wash hands frequently with soap or sanitizer",
+    "Maintain physical distance in crowded areas",
+    "Wear a mask in high-risk situations",
+    "Improve ventilation at home or workplace"
+  ],
+
+  nutrition: {
+    recommended: [
+      "Warm fluids (soups, herbal tea)",
+      "Fruits rich in Vitamin C (orange, kiwi, lemon)",
+      "Zinc-rich foods (nuts, seeds, legumes)",
+      "High-protein foods (eggs, pulses, lean meats)",
+      "Honey with turmeric or ginger"
+    ],
+    avoid: [
+      "Cold beverages",
+      "Sugary or processed snacks",
+      "Fried and greasy foods",
+      "Alcohol and smoking"
+    ]
+  },
+
+  urgent: true,
+
+  notes:
+    "Seek urgent medical care if you experience breathlessness, chest tightness, confusion, persistent high fever, oxygen level <94%, or bluish lips/face."
+},
+"Diabetes": {
+  short:
+    "Blood sugar imbalance — requires lifestyle control, medication adherence, and regular monitoring.",
+
+  avoid: [
+    "Avoid skipping meals or overeating",
+    "Avoid high-sugar foods and sweetened drinks",
+    "Avoid refined carbs (white rice, white bread, pastries)",
+    "Avoid smoking and alcohol",
+    "Avoid a sedentary lifestyle"
+  ],
+
+  do: [
+    "Monitor blood glucose regularly",
+    "Take prescribed medications or insulin on time",
+    "Engage in daily physical activity (walking, yoga, light exercise)",
+    "Eat balanced meals with controlled carbohydrate intake",
+    "Stay hydrated throughout the day",
+    "Maintain regular sleep schedule"
+  ],
+
+  prevention: [
+    "Maintain a healthy weight",
+    "Exercise regularly (at least 30 minutes/day)",
+    "Follow a balanced, low-sugar diet",
+    "Limit stress through yoga or meditation",
+    "Get annual health screenings, especially with family history"
+  ],
+
+  nutrition: {
+    recommended: [
+      "Whole grains (oats, brown rice, millets)",
+      "High-fiber foods (salads, vegetables, legumes)",
+      "Nuts and seeds",
+      "Lean protein (egg whites, chicken, fish)",
+      "Low-GI fruits (apple, pear, berries)"
+    ],
+    avoid: [
+      "Sugar, sweets, and desserts",
+      "Sugary drinks and packaged juices",
+      "White rice and refined flour items",
+      "Deep-fried snacks and junk foods"
+    ]
+  },
+
+  urgent: true,
+
+  notes:
+    "Seek urgent help if symptoms like extreme thirst, fruity breath odor, vomiting, confusion, or very high/low blood sugar occur. These may indicate diabetic ketoacidosis or hypoglycemia."
+},
+
 };
 
 // ✅ Default fallback
