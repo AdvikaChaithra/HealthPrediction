@@ -30,7 +30,7 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Home className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">HealthCheck</span>
+              <span className="text-xl font-bold text-gray-900">Hybrid Framework for Health Prediction</span>
             </div>
           </div>
 
