@@ -84,7 +84,7 @@ This project addresses both: it offers a simple symptom-checker experience backe
 | Component | Technology | Purpose |
 |---|---|---|
 | Languages | Python, JavaScript (ES Modules), TypeScript | ML service, backend, frontend |
-| Frontend | React 18, TypeScript, Vite 5 | Single-page UI (`Bolt/`) |
+| Frontend | React 18, TypeScript, Vite 5 | Single-page UI  |
 | Styling | Tailwind CSS 3, lucide-react | Responsive UI and icons |
 | HTTP Client | Axios | API calls; JWT attached by interceptor |
 | Backend | Node.js, Express 5 | REST API, auth, orchestration |
@@ -103,7 +103,7 @@ The React client calls the Express API with a JWT. For predictions, the API conv
 flowchart LR
     U([User]) --> FE
 
-    subgraph FE["Frontend: React + TypeScript (Bolt/)"]
+    subgraph FE["Frontend: React + TypeScript "]
         P1[Login / Register]
         P2[Home: Symptom Checker]
         P3[History]
@@ -170,14 +170,14 @@ A simple diagram is also available at [`docs/architecture_diagram.png`](docs/arc
 
 ```text
 HealthPrediction/
-├── Bolt/                            # Frontend (React + TypeScript + Vite + Tailwind)
+├── frontend/                            # Frontend (React + TypeScript + Vite + Tailwind)
 │   ├── src/
 │   │   ├── components/Navigation.tsx
 │   │   ├── context/AuthContext.tsx  # Login, register, logout, profile refresh
 │   │   ├── lib/api.ts               # Axios instance + JWT interceptor
 │   │   ├── pages/                   # Home, Login, History, About (profile)
 │   │   ├── App.tsx, main.tsx, index.css
-│   ├── supabase/migrations/         # Leftover schema from the Bolt scaffold (not used by the app)
+│   ├── supabase/migrations/         # Leftover schema from the frontend scaffold (not used by the app)
 │   ├── package.json, vite.config.ts, tailwind.config.js, tsconfig*.json
 │
 ├── backend/                         # Node + Express REST API
@@ -306,14 +306,14 @@ npm install
 MONGO_URI=mongodb://127.0.0.1:27017/ai_health_db npm run setup
 ```
 
-### 6. Set up the frontend (`Bolt/`)
+### 6. Set up the frontend (`frontend/`)
 
 ```bash
-cd Bolt
+cd frontend
 npm install
 ```
 
-Create `Bolt/.env`:
+Create `frontend/.env`:
 
 ```env
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
@@ -335,7 +335,7 @@ cd ml && python app.py
 cd backend && npm start        # or: npm run dev  (requires nodemon, see note)
 
 # 4) Frontend    -> http://localhost:5173
-cd Bolt && npm run dev
+cd frontend && npm run dev
 ```
 
 > `backend/package.json` has a `dev` script that uses `nodemon`, but nodemon is not listed as a dependency. Either run `npm install --save-dev nodemon` or use `npm start`.
@@ -346,11 +346,11 @@ cd Bolt && npm run dev
 |---|---|---|
 | `backend/` | `npm start` | Run API with Node |
 | `backend/` | `npm run dev` | Run API with Nodemon (install nodemon first) |
-| `Bolt/` | `npm run dev` | Start Vite dev server |
-| `Bolt/` | `npm run build` | Production build |
-| `Bolt/` | `npm run preview` | Preview production build |
-| `Bolt/` | `npm run lint` | ESLint |
-| `Bolt/` | `npm run typecheck` | TypeScript check |
+| `frontend/` | `npm run dev` | Start Vite dev server |
+| `frontend/` | `npm run build` | Production build |
+| `frontend/` | `npm run preview` | Preview production build |
+| `frontend/` | `npm run lint` | ESLint |
+| `frontend/` | `npm run typecheck` | TypeScript check |
 | `database/` | `npm run setup` | MongoDB bootstrap script |
 | `ml/` | `python app.py` | Start Flask ML service |
 | `ml/` | `python model_training.py` | Train and save the model |
@@ -571,7 +571,7 @@ Performance is consistent across sex and age bands on this dataset (differences 
 - **Sex = "Other"** is accepted by the UI but may not have been seen during training.
 - **No automated tests**, no `requirements.txt`, and `nodemon` is missing from backend dependencies.
 - **Docs drift:** `docs/api_endpoints.md` and `docs/project_report.docx` describe older paths and folder names (`frontend/`, `/api/predict`).
-- `Bolt/supabase/` and the `@supabase/supabase-js` dependency are leftovers from the project scaffold and are not used by the app.
+- `frontend/supabase/` and the `@supabase/supabase-js` dependency are leftovers from the project scaffold and are not used by the app.
 
 ## Future Enhancements
 
@@ -619,7 +619,7 @@ When reporting a bug, include steps to reproduce, expected vs. actual behaviour,
 - [Express](https://expressjs.com/), [Mongoose](https://mongoosejs.com/), [MongoDB](https://www.mongodb.com/)
 - [React](https://react.dev/), [Vite](https://vite.dev/), [Tailwind CSS](https://tailwindcss.com/), [Lucide Icons](https://lucide.dev/)
 - [Git LFS](https://git-lfs.com/) for large model files
-- Frontend scaffolded with Bolt (Vite + React + TypeScript starter)
+- Frontend scaffolded with frontend (Vite + React + TypeScript starter)
 - Dataset: *add source/generation method and licence.*
 
 ## License
