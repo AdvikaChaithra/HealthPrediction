@@ -1,4 +1,4 @@
-# AI Health Predictor — Hybrid Framework for Symptom-Based Disease Prediction
+# Health Risk Predictor — Hybrid Framework for Symptom-Based Disease Prediction
 
 > A full-stack web application that predicts the most likely disease from a user's symptoms and lifestyle details using a Random Forest model, explains the result, and returns structured health guidance, with per-user prediction history.
 
@@ -40,7 +40,7 @@
 
 ## Overview
 
-**AI Health Predictor** (shown in the UI as *Hybrid Framework for Health Prediction*) combines a **MERN-style web stack** with a **Python machine-learning microservice**. A signed-in user enters their age, sex, diet, smoking history, physical activity, and a list of symptoms. The app sends this to a Flask service that runs a trained **Random Forest classifier** and returns:
+**Health Risk Predictor** (shown in the UI as *Hybrid Framework for Health Prediction*) combines a **MERN-style web stack** with a **Python machine-learning microservice**. A signed-in user enters their age, sex, diet, smoking history, physical activity, and a list of symptoms. The app sends this to a Flask service that runs a trained **Random Forest classifier** and returns:
 
 - the **predicted disease** and a **confidence score**,
 - a **SHAP-based explanation** of the top contributing features (with a feature-importance fallback),
