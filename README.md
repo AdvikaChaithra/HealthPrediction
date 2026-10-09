@@ -631,4 +631,4 @@ This project is released under the **MIT License**. Add a `LICENSE` file at the 
 **Advika**
 
 - GitHub: [@AdvikaChaithra](https://github.com/AdvikaChaithra)
-- Project Repository:[@HealthPredictor](https://github.com/AdvikaChaithra/HealthPrediction)
+- Project Repository:[@HealthRiskPredictor](https://github.com/AdvikaChaithra/HealthPrediction)
