@@ -35,7 +35,6 @@
 - [Security](#security)
 - [Contributing](#contributing)
 - [References and Acknowledgements](#references-and-acknowledgements)
-- [License](#license)
 - [Author](#author)
 
 ## Overview
@@ -622,9 +621,6 @@ When reporting a bug, include steps to reproduce, expected vs. actual behaviour,
 - Frontend scaffolded with frontend (Vite + React + TypeScript starter)
 - Dataset: *add source/generation method and licence.*
 
-## License
-
-This project is released under the **MIT License**. Add a `LICENSE` file at the repository root to make this official.
 
 ## Author
 
