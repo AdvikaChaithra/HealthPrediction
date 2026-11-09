@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema(
     age: {
       type: Number, // optional now
       min: 0,
+      max: 120,
     },
     sex: {
       type: String, // optional now
@@ -37,7 +38,8 @@ const userSchema = new mongoose.Schema(
     },
     diet_type: {
       type: String,
-      enum: ["Vegetarian", "Non-Vegetarian", "Vegan", "Pescatarian", "Healthy", "Other"],
+      // Healthy / Average / Unhealthy match the model; the rest are kept for older profiles.
+      enum: ["Healthy", "Average", "Unhealthy", "Vegetarian", "Non-Vegetarian", "Vegan", "Pescatarian", "Other"],
     },
     smoking_history: {
       type: String,

@@ -17,7 +17,7 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 (async () => {
   try {
     console.log("Connecting to:", MONGO_URI);
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(MONGO_URI);
     console.log("✅ Connected.");
 
     // Define collections (minimal schemas for setup)
@@ -40,6 +40,7 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
 
     // Optionally seed an admin/test user
     rl.question("Seed a test user? (y/N): ", async (ans) => {
+     try {
       if (String(ans).toLowerCase() === "y") {
         const exists = await User.findOne({ email: "admin@health.ai" });
         if (!exists) {
@@ -59,9 +60,14 @@ const rl = readline.createInterface({ input: process.stdin, output: process.stdo
       } else {
         console.log("Skipping seeding.");
       }
+      console.log("✅ Setup complete.");
+     } catch (err) {
+      console.error("❌ Seeding error:", err.message);
+      process.exitCode = 1;
+     } finally {
       await mongoose.disconnect();
       rl.close();
-      console.log("✅ Setup complete.");
+     }
     });
 
   } catch (err) {

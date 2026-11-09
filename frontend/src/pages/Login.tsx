@@ -1,9 +1,10 @@
 // src/pages/Login.tsx
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext'; // ✅ make sure path matches your folder name
+import { getErrorMessage } from '../types';
+import { useAuth } from '../context/AuthContext'; 
 
 export default function Login() {
-  const { login, register } = useAuth(); // ✅ from your custom AuthContext
+  const { login, register } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -25,8 +26,8 @@ export default function Login() {
         if (!phone.trim()) throw new Error('Phone number is required');
         await register(fullName, phone, email, password);
       }
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err.message || 'Something went wrong');
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

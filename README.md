@@ -84,7 +84,7 @@ This project addresses both: it offers a simple symptom-checker experience backe
 | Component | Technology | Purpose |
 |---|---|---|
 | Languages | Python, JavaScript (ES Modules), TypeScript | ML service, backend, frontend |
-| Frontend | React 18, TypeScript, Vite 5 | Single-page UI (`Bolt/`) |
+| Frontend | React 18, TypeScript, Vite 5 | Single-page UI (`frontend/`) |
 | Styling | Tailwind CSS 3, lucide-react | Responsive UI and icons |
 | HTTP Client | Axios | API calls; JWT attached by interceptor |
 | Backend | Node.js, Express 5 | REST API, auth, orchestration |
@@ -103,7 +103,7 @@ The React client calls the Express API with a JWT. For predictions, the API conv
 flowchart LR
     U([User]) --> FE
 
-    subgraph FE["Frontend: React + TypeScript (Bolt/)"]
+    subgraph FE["Frontend: React + TypeScript (frontend/)"]
         P1[Login / Register]
         P2[Home: Symptom Checker]
         P3[History]
@@ -170,7 +170,7 @@ A simple diagram is also available at [`docs/architecture_diagram.png`](docs/arc
 
 ```text
 HealthPrediction/
-├── Bolt/                            # Frontend (React + TypeScript + Vite + Tailwind)
+├── frontend/                        # Frontend (React + TypeScript + Vite + Tailwind)
 │   ├── src/
 │   │   ├── components/Navigation.tsx
 │   │   ├── context/AuthContext.tsx  # Login, register, logout, profile refresh
@@ -257,10 +257,9 @@ source .venv/bin/activate
 ```
 
 ```bash
-pip install flask flask-cors scikit-learn pandas numpy joblib shap
+pip install -r requirements.txt
 ```
 
-*(Tip: after installing, run `pip freeze > requirements.txt` and commit it so others can reproduce your environment.)*
 
 ### 3. (Optional) Retrain the model
 
@@ -306,14 +305,14 @@ npm install
 MONGO_URI=mongodb://127.0.0.1:27017/ai_health_db npm run setup
 ```
 
-### 6. Set up the frontend (`Bolt/`)
+### 6. Set up the frontend (`frontend/`)
 
 ```bash
-cd Bolt
+cd frontend
 npm install
 ```
 
-Create `Bolt/.env`:
+Create `frontend/.env`:
 
 ```env
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
@@ -332,25 +331,24 @@ Run each in its own terminal, in this order:
 cd ml && python app.py
 
 # 3) Backend API -> http://127.0.0.1:8000
-cd backend && npm start        # or: npm run dev  (requires nodemon, see note)
+cd backend && npm start        # or: npm run dev  (auto-restart with nodemon)
 
 # 4) Frontend    -> http://localhost:5173
-cd Bolt && npm run dev
+cd frontend && npm run dev
 ```
 
-> `backend/package.json` has a `dev` script that uses `nodemon`, but nodemon is not listed as a dependency. Either run `npm install --save-dev nodemon` or use `npm start`.
 
 ### Available scripts
 
 | Location | Command | Description |
 |---|---|---|
 | `backend/` | `npm start` | Run API with Node |
-| `backend/` | `npm run dev` | Run API with Nodemon (install nodemon first) |
-| `Bolt/` | `npm run dev` | Start Vite dev server |
-| `Bolt/` | `npm run build` | Production build |
-| `Bolt/` | `npm run preview` | Preview production build |
-| `Bolt/` | `npm run lint` | ESLint |
-| `Bolt/` | `npm run typecheck` | TypeScript check |
+| `backend/` | `npm run dev` | Run API with Nodemon |
+| `frontend/` | `npm run dev` | Start Vite dev server |
+| `frontend/` | `npm run build` | Production build |
+| `frontend/` | `npm run preview` | Preview production build |
+| `frontend/` | `npm run lint` | ESLint |
+| `frontend/` | `npm run typecheck` | TypeScript check |
 | `database/` | `npm run setup` | MongoDB bootstrap script |
 | `ml/` | `python app.py` | Start Flask ML service |
 | `ml/` | `python model_training.py` | Train and save the model |
@@ -361,7 +359,7 @@ cd Bolt && npm run dev
 2. **Register** with name, phone, email, and password on the login screen (you are signed in automatically).
 3. *(Recommended)* Open **About** (profile) and fill in age, sex, diet type, and smoking history.
 4. On **Home** (Health Symptom Checker), fill in:
-   - Age, Sex, Diet Type (Healthy / Vegetarian / Non-Vegetarian / Vegan), Smoking History (Never / Former / Current), Physical Activity (Low / Moderate / High)
+   - Age, Sex, Diet Quality (Healthy / Average / Unhealthy), Smoking History (Never / Former / Current), Physical Activity (Rarely / Occasional / Regular)
    - Symptoms, separated by commas, e.g. `Fever, Cough, Headache`
 5. Click **Predict Health** to see the predicted disease, confidence bar, and guidance cards (avoid, do, prevention, nutrition, notes, urgent banner).
 6. Open **History** to review all earlier predictions with their inputs and details.
@@ -401,7 +399,7 @@ Request body for `POST /api/prediction`:
     "sex": "Female",
     "diet_type": "Healthy",
     "smoking_history": "Never",
-    "physical_activity": "Moderate",
+    "physical_activity": "Regular",
     "symptoms": "Fever, Cough, Headache"
   }
 }
@@ -415,7 +413,7 @@ Response (abridged):
   "confidence": 0.97,
   "explanation": {
     "method": "shap",
-    "top_contributors": [{ "feature": "remainder__Fever", "contribution": 0.05 }]
+    "top_contributors": [{ "feature": "Fever", "contribution": 0.05 }]
   },
   "historyId": "<ObjectId>",
   "advice": {
@@ -563,15 +561,14 @@ Performance is consistent across sex and age bands on this dataset (differences 
 ## Limitations
 
 - **Synthetic training data.** Metrics are not representative of real clinical performance; this is not a diagnostic tool.
-- **Dataset not in the repository.** Retraining requires supplying the CSV; its categories (for example the allowed values of `ExerciseFrequency`) must match what the form sends. Unknown categories are silently ignored by the encoder.
-- **Strict symptom matching.** Only the 28 listed keywords are recognised. Synonyms, misspellings, and sentences are ignored without warning, which can produce a prediction from fewer symptoms than the user entered.
+- **Dataset not in the repository.** Retraining requires supplying the CSV. If its categories change, update the options in `frontend/src/types.ts` and the maps in `backend/controllers/predictionController.js` (`GET /api/prediction/schema` lists the categories the model knows).
+- **Strict symptom matching.** Only the 28 listed keywords are recognised. Synonyms, misspellings, and sentences are not matched; unrecognised entries are listed back to the user, and a request with no recognised symptom is rejected.
 - **Limited label space.** The model chooses only among 7 diseases, so it will always return one of them, even for unrelated symptoms.
 - **Static guidance.** Advice text is hard-coded and has not been clinically reviewed.
-- **Explainability caveats.** The explainer reloads `model.pkl` on every request, and depending on SHAP output shape it may fall back to global feature importances. The committed `global_explain.json` lists only demographic features, so regenerate it and review the output.
 - **Sex = "Other"** is accepted by the UI but may not have been seen during training.
-- **No automated tests**, no `requirements.txt`, and `nodemon` is missing from backend dependencies.
-- **Docs drift:** `docs/api_endpoints.md` and `docs/project_report.docx` describe older paths and folder names (`frontend/`, `/api/predict`).
-- `Bolt/supabase/` and the `@supabase/supabase-js` dependency are leftovers from the project scaffold and are not used by the app.
+- **No automated tests.**
+- **Docs drift:** `docs/project_report.docx` may describe older paths (for example `/api/predict`).
+- `frontend/supabase/` is a leftover from the project scaffold and is not used by the app.
 
 ## Future Enhancements
 

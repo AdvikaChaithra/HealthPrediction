@@ -1,9 +1,9 @@
-// backend/controllers/predictionController.js 
+// backend/controllers/predictionController.js
 import History from "../models/History.js";
 import { predictDisease } from "../utils/mlService.js";
 import diseaseAdvice from "../config/diseaseAdvice.js";
 
-// Helper to normalize text for consistent lookups
+// Normalize text for consistent lookups ("Loss_of-smell " -> "loss of smell")
 const normalize = (text) =>
   (text || "")
     .toString()
@@ -12,74 +12,135 @@ const normalize = (text) =>
     .replace(/\s+/g, " ")
     .trim();
 
+// Symptom columns the model was trained on
+export const SYMPTOM_KEYS = [
+  "Back Pain", "Bleeding Gums", "Blurred Vision", "Body Ache", "Chest Pain",
+  "Cold Hands", "Cough", "Dizziness", "Fatigue", "Fever",
+  "Frequent Urination", "Headache", "High Fever", "Increased Thirst",
+  "Irregular Heartbeat", "Itching", "Joint Pain", "Loss of Smell",
+  "Nausea", "Pale Skin", "Rash", "Shortness of Breath", "Slow Healing",
+  "Sore Throat", "Sweating", "Swelling", "Weakness", "Weight Loss",
+];
+
+// The model only knows these category values. Map form/profile values onto them;
+// anything unrecognised would otherwise be silently ignored by the one-hot encoder.
+const DIET_MAP = {
+  healthy: "Healthy",
+  average: "Average",
+  unhealthy: "Unhealthy",
+  // legacy profile values
+  vegetarian: "Healthy",
+  vegan: "Healthy",
+  pescatarian: "Healthy",
+  "non vegetarian": "Average",
+  other: "Average",
+};
+
+const ACTIVITY_MAP = {
+  rarely: "Rarely",
+  occasional: "Occasional",
+  regular: "Regular",
+  // legacy form values
+  low: "Rarely",
+  moderate: "Occasional",
+  high: "Regular",
+};
+
+const SMOKING_VALUES = ["Never", "Former", "Current"];
+const SEX_VALUES = ["Male", "Female", "Other"];
+
+const FALLBACK_ADVICE = {
+  short: "No specific guidance available.",
+  avoid: [],
+  do: ["Consult a healthcare provider for personalized advice."],
+  prevention: [],
+  nutrition: { recommended: [], avoid: [] },
+  urgent: false,
+  notes: "",
+};
+
+// Normalized lookup table: "covid 19" -> COVID-19 advice, etc.
+const adviceByKey = Object.fromEntries(
+  Object.entries(diseaseAdvice).map(([k, v]) => [normalize(k), v])
+);
+
 export const predict = async (req, res) => {
   try {
-    const { features } = req.body;
-    const userId = req.userId; // 👈 comes from verifyToken
+    const features = req.body?.features;
+    if (!features || typeof features !== "object") {
+      return res.status(400).json({ message: "Request body must include a 'features' object" });
+    }
 
-    // --- Store user-friendly snapshot ---
+    const age = Number(features.age);
+    if (features.age === "" || features.age == null || !Number.isFinite(age) || age < 0 || age > 120) {
+      return res.status(400).json({ message: "Please enter a valid age (0-120)" });
+    }
+
+    const sex = SEX_VALUES.find((s) => normalize(s) === normalize(features.sex));
+    if (!sex) return res.status(400).json({ message: "Sex must be Male, Female, or Other" });
+
+    const smoking = SMOKING_VALUES.find((s) => normalize(s) === normalize(features.smoking_history));
+    if (!smoking) return res.status(400).json({ message: "Smoking history must be Never, Former, or Current" });
+
+    const diet = DIET_MAP[normalize(features.diet_type)];
+    if (!diet) return res.status(400).json({ message: "Diet type must be Healthy, Average, or Unhealthy" });
+
+    const activity = ACTIVITY_MAP[normalize(features.physical_activity)];
+    if (!activity) {
+      return res.status(400).json({ message: "Physical activity must be Rarely, Occasional, or Regular" });
+    }
+
+    const symptomsText = (features.symptoms || "").toString().trim();
+    const symptomList = symptomsText
+      .split(/[,;\n]+/)
+      .map((s) => normalize(s))
+      .filter(Boolean);
+
+    // --- User-friendly snapshot (what the user entered) ---
     const formSnapshot = {
-      age: Number(features.age) || null,
-      sex: features.sex || "",
-      diet_type: features.diet_type || "",
-      smoking_history: features.smoking_history || "",
-      physical_activity: features.physical_activity || "",
-      symptoms_text: (features.symptoms || "").trim(),
+      age,
+      sex,
+      diet_type: features.diet_type,
+      smoking_history: smoking,
+      physical_activity: features.physical_activity,
+      symptoms_text: symptomsText,
     };
 
-    // --- Build ML-ready features ---
+    // --- ML-ready features ---
     const mappedFeatures = {
-      Age: formSnapshot.age,
-      Sex: formSnapshot.sex,
-      SmokingHistory: formSnapshot.smoking_history,
-      DietType: formSnapshot.diet_type,
-      ExerciseFrequency: formSnapshot.physical_activity,
+      Age: age,
+      Sex: sex,
+      SmokingHistory: smoking,
+      DietType: diet,
+      ExerciseFrequency: activity,
     };
 
-    // --- Process symptoms ---
-    const symptomList = formSnapshot.symptoms_text
-      ? formSnapshot.symptoms_text
-          .split(/[,;\n]+/)
-          .map((s) => normalize(s))
-          .filter(Boolean)
-      : [];
-
-    const symptomKeys = [
-      "Back Pain", "Bleeding Gums", "Blurred Vision", "Body Ache", "Chest Pain",
-      "Cold Hands", "Cough", "Dizziness", "Fatigue", "Fever",
-      "Frequent Urination", "Headache", "High Fever", "Increased Thirst",
-      "Irregular Heartbeat", "Itching", "Joint Pain", "Loss of Smell",
-      "Nausea", "Pale Skin", "Rash", "Shortness of Breath", "Slow Healing",
-      "Sore Throat", "Sweating", "Swelling", "Weakness", "Weight Loss"
-    ];
-
-    symptomKeys.forEach((key) => {
-      const nk = normalize(key);
-      mappedFeatures[key] = symptomList.includes(nk) ? 1 : 0;
+    const matched = [];
+    SYMPTOM_KEYS.forEach((key) => {
+      const hit = symptomList.includes(normalize(key));
+      mappedFeatures[key] = hit ? 1 : 0;
+      if (hit) matched.push(key);
     });
+
+    if (matched.length === 0) {
+      return res.status(400).json({
+        message: `None of the entered symptoms were recognised. Try for example: ${SYMPTOM_KEYS.slice(0, 6).join(", ")}.`,
+      });
+    }
+
+    const unrecognized = symptomList.filter(
+      (s) => !SYMPTOM_KEYS.some((k) => normalize(k) === s)
+    );
 
     // --- Get prediction from ML model ---
     const result = await predictDisease(mappedFeatures);
-    const predicted = (result.prediction || "Unknown").trim();
+    const predicted = String(result.prediction || "Unknown").trim();
 
-    // --- Find advice (case-insensitive lookup) ---
-    const adviceKey = normalize(predicted);
     const advice =
-      diseaseAdvice[adviceKey] ||
-      diseaseAdvice[predicted] ||
-      diseaseAdvice["default"] || {
-        short: "No specific guidance available.",
-        avoid: [],
-        do: ["Consult a healthcare provider for personalized advice."],
-        prevention: [],
-        nutrition: { recommended: [], avoid: [] },
-        urgent: false,
-        notes: "",
-      };
+      adviceByKey[normalize(predicted)] || diseaseAdvice["default"] || FALLBACK_ADVICE;
 
-    // --- Save to MongoDB ---
     const historyEntry = await History.create({
-      userId,
+      userId: req.userId,
       form: formSnapshot,
       features: mappedFeatures,
       prediction: predicted,
@@ -88,24 +149,26 @@ export const predict = async (req, res) => {
       advice,
     });
 
-    // --- Send back full result with advice ---
     res.json({
-      ...result,
       prediction: predicted,
+      confidence: result.confidence ?? 0,
+      explanation: result.explanation ?? null,
+      matchedSymptoms: matched,
+      unrecognizedSymptoms: unrecognized,
       historyId: historyEntry._id,
+      createdAt: historyEntry.createdAt,
       advice,
     });
   } catch (err) {
-    console.error("❌ Prediction Error:", err);
-    res.status(500).json({ message: err.message || "Prediction failed" });
+    console.error("❌ Prediction Error:", err.message);
+    res.status(err.status || 500).json({ message: err.message || "Prediction failed" });
   }
 };
 
-// ✅ Fetch user’s full prediction history
+// Fetch the logged-in user's prediction history (newest first)
 export const getHistory = async (req, res) => {
   try {
-    const userId = req.userId;
-    const history = await History.find({ userId }).sort({ createdAt: -1 });
+    const history = await History.find({ userId: req.userId }).sort({ createdAt: -1 });
     res.json(history);
   } catch (err) {
     console.error("❌ History Fetch Error:", err.message);
