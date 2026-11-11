@@ -35,7 +35,6 @@
 - [Security](#security)
 - [Contributing](#contributing)
 - [References and Acknowledgements](#references-and-acknowledgements)
-- [License](#license)
 - [Author](#author)
 
 ## Overview
@@ -84,7 +83,11 @@ This project addresses both: it offers a simple symptom-checker experience backe
 | Component | Technology | Purpose |
 |---|---|---|
 | Languages | Python, JavaScript (ES Modules), TypeScript | ML service, backend, frontend |
+<<<<<<< HEAD
 | Frontend | React 18, TypeScript, Vite 5 | Single-page UI (`frontend/`) |
+=======
+| Frontend | React 18, TypeScript, Vite 5 | Single-page UI  |
+>>>>>>> 3f3de2da8ee5da56ba15d68ca5819fb7469dc93e
 | Styling | Tailwind CSS 3, lucide-react | Responsive UI and icons |
 | HTTP Client | Axios | API calls; JWT attached by interceptor |
 | Backend | Node.js, Express 5 | REST API, auth, orchestration |
@@ -103,7 +106,11 @@ The React client calls the Express API with a JWT. For predictions, the API conv
 flowchart LR
     U([User]) --> FE
 
+<<<<<<< HEAD
     subgraph FE["Frontend: React + TypeScript (frontend/)"]
+=======
+    subgraph FE["Frontend: React + TypeScript "]
+>>>>>>> 3f3de2da8ee5da56ba15d68ca5819fb7469dc93e
         P1[Login / Register]
         P2[Home: Symptom Checker]
         P3[History]
@@ -170,14 +177,18 @@ A simple diagram is also available at [`docs/architecture_diagram.png`](docs/arc
 
 ```text
 HealthPrediction/
+<<<<<<< HEAD
 ├── frontend/                        # Frontend (React + TypeScript + Vite + Tailwind)
+=======
+├── frontend/                            # Frontend (React + TypeScript + Vite + Tailwind)
+>>>>>>> 3f3de2da8ee5da56ba15d68ca5819fb7469dc93e
 │   ├── src/
 │   │   ├── components/Navigation.tsx
 │   │   ├── context/AuthContext.tsx  # Login, register, logout, profile refresh
 │   │   ├── lib/api.ts               # Axios instance + JWT interceptor
 │   │   ├── pages/                   # Home, Login, History, About (profile)
 │   │   ├── App.tsx, main.tsx, index.css
-│   ├── supabase/migrations/         # Leftover schema from the Bolt scaffold (not used by the app)
+│   ├── supabase/migrations/         # Leftover schema from the frontend scaffold (not used by the app)
 │   ├── package.json, vite.config.ts, tailwind.config.js, tsconfig*.json
 │
 ├── backend/                         # Node + Express REST API
@@ -343,7 +354,11 @@ cd frontend && npm run dev
 | Location | Command | Description |
 |---|---|---|
 | `backend/` | `npm start` | Run API with Node |
+<<<<<<< HEAD
 | `backend/` | `npm run dev` | Run API with Nodemon |
+=======
+| `backend/` | `npm run dev` | Run API with Nodemon (install nodemon first) |
+>>>>>>> 3f3de2da8ee5da56ba15d68ca5819fb7469dc93e
 | `frontend/` | `npm run dev` | Start Vite dev server |
 | `frontend/` | `npm run build` | Production build |
 | `frontend/` | `npm run preview` | Preview production build |
@@ -566,9 +581,15 @@ Performance is consistent across sex and age bands on this dataset (differences 
 - **Limited label space.** The model chooses only among 7 diseases, so it will always return one of them, even for unrelated symptoms.
 - **Static guidance.** Advice text is hard-coded and has not been clinically reviewed.
 - **Sex = "Other"** is accepted by the UI but may not have been seen during training.
+<<<<<<< HEAD
 - **No automated tests.**
 - **Docs drift:** `docs/project_report.docx` may describe older paths (for example `/api/predict`).
 - `frontend/supabase/` is a leftover from the project scaffold and is not used by the app.
+=======
+- **No automated tests**, no `requirements.txt`, and `nodemon` is missing from backend dependencies.
+- **Docs drift:** `docs/api_endpoints.md` and `docs/project_report.docx` describe older paths and folder names (`frontend/`, `/api/predict`).
+- `frontend/supabase/` and the `@supabase/supabase-js` dependency are leftovers from the project scaffold and are not used by the app.
+>>>>>>> 3f3de2da8ee5da56ba15d68ca5819fb7469dc93e
 
 ## Future Enhancements
 
@@ -616,12 +637,9 @@ When reporting a bug, include steps to reproduce, expected vs. actual behaviour,
 - [Express](https://expressjs.com/), [Mongoose](https://mongoosejs.com/), [MongoDB](https://www.mongodb.com/)
 - [React](https://react.dev/), [Vite](https://vite.dev/), [Tailwind CSS](https://tailwindcss.com/), [Lucide Icons](https://lucide.dev/)
 - [Git LFS](https://git-lfs.com/) for large model files
-- Frontend scaffolded with Bolt (Vite + React + TypeScript starter)
+- Frontend scaffolded with frontend (Vite + React + TypeScript starter)
 - Dataset: *add source/generation method and licence.*
 
-## License
-
-This project is released under the **MIT License**. Add a `LICENSE` file at the repository root to make this official.
 
 ## Author
 
