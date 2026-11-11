@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 const FormSnapshotSchema = new mongoose.Schema(
   {
     age: { type: Number, min: 0, max: 150 },
-    sex: { type: String, enum: ["Male", "Female", "Other"], default: "" },
+    sex: { type: String, enum: ["Male", "Female", "Other", ""], default: "" },
     diet_type: { type: String, default: "" },
     smoking_history: { type: String, default: "" },
     physical_activity: { type: String, default: "" },

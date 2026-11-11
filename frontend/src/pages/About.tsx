@@ -1,9 +1,7 @@
 // src/pages/About.tsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   User as UserIcon,
-  Mail,
-  Calendar,
   Users,
   Utensils,
   Cigarette,
@@ -12,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
+import { DIET_OPTIONS, SEX_OPTIONS, SMOKING_OPTIONS, getErrorMessage } from '../types';
 
 export default function About() {
   const { user, refreshProfile } = useAuth();
@@ -21,7 +20,7 @@ export default function About() {
     email: user?.email || '',
     phone: user?.phone || '',
     address: user?.address || '',
-    age: user?.age ?? '',
+    age: user?.age != null ? String(user.age) : '',
     sex: user?.sex ?? '',
     diet_type: '',
     smoking_history: '',
@@ -44,13 +43,13 @@ export default function About() {
           email: data.email,
           phone: data.phone ?? '',
           address: data.address ?? '',
-          age: data.age ?? '',
+          age: data.age != null ? String(data.age) : '',
           sex: data.sex ?? '',
           diet_type: data.diet_type ?? '',
           smoking_history: data.smoking_history ?? '',
         });
-      } catch (err: any) {
-        setError(err?.response?.data?.message || 'Failed to load profile');
+      } catch (err) {
+        setError(getErrorMessage(err, 'Failed to load profile'));
       } finally {
         setLoading(false);
       }
@@ -58,25 +57,29 @@ export default function About() {
     fetchProfile();
   }, [user]);
 
-  const handleChange = (key: string, value: string | number) =>
+  const handleChange = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    setSuccess('');
+  };
 
   const onSave = async () => {
     try {
       setSaving(true);
       await api.put('/user/profile', {
-        phone: form.phone || undefined,
-        address: form.address || undefined,
-        age: form.age ? Number(form.age) : undefined,
-        sex: form.sex || undefined,
-        diet_type: form.diet_type || undefined,
-        smoking_history: form.smoking_history || undefined,
+        // Empty values clear the field on the server.
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        age: form.age === '' ? '' : Number(form.age),
+        sex: form.sex,
+        diet_type: form.diet_type,
+        smoking_history: form.smoking_history,
       });
       await refreshProfile();
       setSuccess('Profile updated successfully!');
       setError('');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to update profile');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to update profile'));
+      setSuccess('');
     } finally {
       setSaving(false);
     }
@@ -181,16 +184,14 @@ export default function About() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              {SEX_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
 
           {/* diet */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
-              <Utensils className="w-4 h-4" /> Diet Type
+              <Utensils className="w-4 h-4" /> Diet Quality
             </label>
             <select
               value={form.diet_type}
@@ -198,10 +199,10 @@ export default function About() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select</option>
-              <option value="Healthy">Healthy</option>
-              <option value="Vegetarian">Vegetarian</option>
-              <option value="Non-Vegetarian">Non-Vegetarian</option>
-              <option value="Vegan">Vegan</option>
+              {DIET_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+              {form.diet_type && !DIET_OPTIONS.includes(form.diet_type) && (
+                <option value={form.diet_type}>{form.diet_type} (legacy)</option>
+              )}
             </select>
           </div>
 
@@ -216,9 +217,7 @@ export default function About() {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select</option>
-              <option value="Never">Never</option>
-              <option value="Former">Former</option>
-              <option value="Current">Current</option>
+              {SMOKING_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
         </div>
@@ -234,8 +233,8 @@ export default function About() {
         </div>
 
         <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
-          <strong>Note:</strong> Your health information is updated automatically when you make a
-          new prediction.
+          <strong>Note:</strong> Age, sex, diet quality and smoking history saved here are pre-filled
+          into the Symptom Checker on the Home page.
         </div>
       </div>
     </div>

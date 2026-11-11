@@ -1,82 +1,86 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { isAxiosError } from 'axios';
 import api from '../lib/api';
+import type { User } from '../types';
 
-// --- User type definition ---
-type User = {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  age?: number;
-  sex?: string;
-};
-
-// --- Context type definition ---
 type AuthContextType = {
   user: User | null;
   token: string | null;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, phone: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
 };
 
-// --- Create the Auth Context ---
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// --- Auth Provider Component ---
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+const readToken = () => {
+  try {
+    return localStorage.getItem('token');
+  } catch {
+    return null;
+  }
+};
 
-  // Function to refresh user profile
-  const refreshProfile = async () => {
-    if (!token) return;
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(readToken);
+  const [user, setUser] = useState<User | null>(null);
+  // While a stored token is being validated, show a spinner instead of the login screen.
+  const [loading, setLoading] = useState<boolean>(() => !!readToken());
+
+  const saveSession = (newToken: string, newUser: User) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    setUser(newUser);
+  };
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (!readToken()) return;
     try {
       const { data } = await api.get<User>('/user/profile');
       setUser(data);
     } catch (error) {
-      console.error('Failed to refresh profile:', error);
-      logout();
+      // Only drop the session when the token itself is rejected,
+      // not on a temporary network/server error.
+      const status = isAxiosError(error) ? error.response?.status : undefined;
+      if (status === 401 || status === 403 || status === 404) logout();
+      else console.error('Failed to refresh profile:', error);
     }
-  };
+  }, [logout]);
 
-  // Load user profile when token exists
+  // Validate a stored token once on startup.
   useEffect(() => {
-    if (token) refreshProfile();
-  }, [token]);
+    if (!readToken()) return;
+    refreshProfile().finally(() => setLoading(false));
+  }, [refreshProfile]);
 
-  // --- Login Function ---
   const login = async (email: string, password: string) => {
     const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', data.token);
-    setToken(data.token);
-    setUser(data.user);
+    saveSession(data.token, data.user);
   };
 
-  // --- Register Function ---
   const register = async (name: string, phone: string, email: string, password: string) => {
-    await api.post('/auth/register', { name, phone, email, password });
-    await login(email, password); // Auto login after successful register
-  };
-
-  // --- Logout Function ---
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
+    const { data } = await api.post('/auth/register', { name, phone, email, password });
+    if (data.token) saveSession(data.token, data.user);
+    else await login(email, password);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// --- useAuth Hook ---
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error('useAuth must be used within an AuthProvider');

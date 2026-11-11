@@ -1,4 +1,4 @@
-import { Home, History, User, LogOut } from "lucide-react";
+import { Home, History, User, LogOut, HeartPulse } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 interface NavigationProps {
@@ -6,61 +6,59 @@ interface NavigationProps {
   onNavigate: (page: string) => void;
 }
 
+const navItems = [
+  { id: "home", label: "Home", icon: Home },
+  { id: "history", label: "History", icon: History },
+  { id: "about", label: "Profile", icon: User },
+];
+
 export default function Navigation({ currentPage, onNavigate }: NavigationProps) {
-  const { logout, user } = useAuth(); // ✅ FIX: use logout instead of signOut
-
-  const handleSignOut = () => {
-    logout(); // ✅ directly call logout()
-    window.location.href = "/login"; // ✅ redirect to login page
-  };
-
-  const navItems = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "history", label: "History", icon: History },
-    { id: "about", label: "About", icon: User },
-  ];
+  const { logout, user } = useAuth();
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left Section */}
-          <div className="flex items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">Hybrid Framework for Health Prediction</span>
+        <div className="flex justify-between items-center h-16 gap-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <HeartPulse className="w-6 h-6 text-white" />
+            </div>
+            <div className="min-w-0 hidden md:block">
+              <span className="block text-lg font-bold text-gray-900 truncate">
+                Hybrid Framework for Health Prediction
+              </span>
+              {user?.name && (
+                <span className="block text-xs text-gray-500 truncate">Signed in as {user.name}</span>
+              )}
             </div>
           </div>
 
-          {/* Navigation Links */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-1 sm:gap-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
+                  aria-current={currentPage === item.id ? "page" : undefined}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition ${
                     currentPage === item.id
                       ? "bg-blue-50 text-blue-600"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
+                  <span className="hidden sm:inline">{item.label}</span>
                 </button>
               );
             })}
 
-            {/* Sign Out */}
             <button
-              onClick={handleSignOut}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 transition"
+              onClick={logout}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 transition"
             >
               <LogOut className="w-5 h-5" />
-              <span>Sign Out</span>
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </div>

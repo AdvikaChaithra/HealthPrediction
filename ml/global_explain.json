@@ -2,32 +2,84 @@
   "method": "shap",
   "top_features": [
     {
-      "feature": "cat__SmokingHistory_Former",
-      "importance": 0.011466806760913193
+      "feature": "Swelling",
+      "importance": 0.028964040746214198
     },
     {
-      "feature": "cat__SmokingHistory_Never",
-      "importance": 0.010172032724608518
+      "feature": "Shortness of Breath",
+      "importance": 0.02315031703357757
     },
     {
-      "feature": "cat__DietType_Average",
-      "importance": 0.01011164631799063
+      "feature": "Headache",
+      "importance": 0.019482807866947602
     },
     {
-      "feature": "cat__Sex_Female",
-      "importance": 0.010053677903289013
+      "feature": "Body Ache",
+      "importance": 0.019244217917546453
     },
     {
-      "feature": "cat__SmokingHistory_Current",
-      "importance": 0.009796629641979115
+      "feature": "Sore Throat",
+      "importance": 0.018936397713551226
     },
     {
-      "feature": "cat__Sex_Male",
-      "importance": 0.0093143487772324
+      "feature": "Nausea",
+      "importance": 0.01877063695651875
     },
     {
-      "feature": "num__Age",
-      "importance": 0.008990248350312811
+      "feature": "Fatigue",
+      "importance": 0.018533938309009547
+    },
+    {
+      "feature": "Loss of Smell",
+      "importance": 0.016555195969734753
+    },
+    {
+      "feature": "Chest Pain",
+      "importance": 0.01592621368862972
+    },
+    {
+      "feature": "Blurred Vision",
+      "importance": 0.014981873353913195
+    },
+    {
+      "feature": "Frequent Urination",
+      "importance": 0.014447897332070542
+    },
+    {
+      "feature": "Itching",
+      "importance": 0.01438375422087017
+    },
+    {
+      "feature": "Weakness",
+      "importance": 0.0140335284747223
+    },
+    {
+      "feature": "Cough",
+      "importance": 0.013406682859583945
+    },
+    {
+      "feature": "High Fever",
+      "importance": 0.01302620788856388
+    },
+    {
+      "feature": "Cold Hands",
+      "importance": 0.012427277074034543
+    },
+    {
+      "feature": "Slow Healing",
+      "importance": 0.012206105038178034
+    },
+    {
+      "feature": "Fever",
+      "importance": 0.012176165878632348
+    },
+    {
+      "feature": "Sweating",
+      "importance": 0.011927209805068872
+    },
+    {
+      "feature": "Bleeding Gums",
+      "importance": 0.011314228224683994
     }
   ]
 }
